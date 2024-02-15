@@ -284,6 +284,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "Account details updated successfully"))
 })
 
+//update user avatar
 const updateUserAvatar = asyncHandler(async (req, res) => {
   const avatarLocalPath = req.file?.path //local pein multer ne upload kaar di hogii
 
@@ -291,13 +292,17 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     throw new ApiError(400, "avatar file is missing")
   }
 
-  
+  //delete privious avatar file on cloudinary
+  // const user = await User.findById(req.user?._id).select(
+  //   "-password -refreshToken"
+  // )
 
   const avatar = await uploadOnCloudinary(avatarLocalPath)
 
   if (!avatar.url) {
     throw new ApiError(400, "Error while uploading avatar")
   }
+
   const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
@@ -313,6 +318,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "Avatar Image updated successfully"))
 })
 
+//update usercover image
 const updateUserCoverImage = asyncHandler(async (req, res) => {
   const coverImageLocalPath = req.file?.path //local pein multer ne upload kaar di hogii
 
@@ -340,6 +346,77 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "Cover image updated successfully"))
 })
 
+const getUserChannelProfile = asyncHandler(async (req, res) => {
+  const { username } = req.params
+  if (!username?.trim) {
+    throw new ApiError(400, "User is missing")
+  }
+  //TODO: aggregate pipeline it returns an array
+  const channel = await User.aggregate([
+    {
+      $match: {
+        username: username?.toLowerCase(),
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "channel", //channel ko select kar liya hai toh apko milenge subscribers
+        as: "subscribers",
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "subscriber",
+        as: "subscribedTo", //meine kisko subscribed kaar rakha haai
+      },
+    },
+    //add this two different fields
+    {
+      $addFields: {
+        subscribersCount: {
+          $size: "$subscribers",
+        },
+        channelSubscribedToCount: {
+          $size: "$subscribedTo",
+        },
+        //TODO: $in: means prensent hai yaa nhi haai
+        // AND In object ke andar ja ke bhi dekh leta hai aur array bhi
+        isSubscribed: {
+          $condi: {
+            if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+            then: true,
+            else: false,
+          },
+        },
+      },
+    },
+    //projection deta hai ki mein saari value ko mein vha pein projct nhi karunga vha pein jo bhi usko demand kar rha hai usko mein selected chize hi dunga
+    {
+      $project: {
+        fullName: 1,
+        username: 1,
+        subscribersCount: 1,
+        channelSubscribedToCount: 1,
+        isSubscribed: 1,
+        avatar: 1,
+        coverImage: 1,
+        email: 1,
+      },
+    },
+  ])
+  console.log(channel)
+  if (!channel?.length) {
+    throw new ApiError(404, "channel does not exists")
+  }
+  return res
+    .status(200)
+    .json(new ApiResponse(200,channel[0],"User channel fetched successfully"))
+})
+
 export {
   registerUser,
   loginUser,
@@ -350,4 +427,5 @@ export {
   updateAccountDetails,
   updateUserAvatar,
   updateUserCoverImage,
+  getUserChannelProfile,
 }
