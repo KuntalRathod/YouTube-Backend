@@ -289,11 +289,14 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Password changed successfully"))
 })
 
+//get Current user
 const getCurrentUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, req.user, "current user fetched successfully"))
 })
+
+//updateAccountDetails
 const updateAccountDetails = asyncHandler(async (req, res) => {
   const { fullName, email } = req.body
   if (!(fullName || email)) {
@@ -329,8 +332,10 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   //   "-password -refreshToken"
   // )
 
+  //upload in cloudinary and get a url file so
   const avatar = await uploadOnCloudinary(avatarLocalPath)
 
+  //check avatar
   if (!avatar.url) {
     throw new ApiError(400, "Error while uploading avatar")
   }
@@ -378,18 +383,23 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "Cover image updated successfully"))
 })
 
+// get user Channel  profile function
 const getUserChannelProfile = asyncHandler(async (req, res) => {
+  //getting data from url
   const { username } = req.params
-  if (!username?.trim) {
+  if (!username?.trim()) {
     throw new ApiError(400, "User is missing")
   }
   //TODO: aggregate pipeline it returns an array
   const channel = await User.aggregate([
+    // match the value
+    // pipeline stage 1
     {
       $match: {
         username: username?.toLowerCase(),
       },
     },
+    // stage 2 lookup all the sabscribers value
     {
       $lookup: {
         from: "subscriptions",
@@ -398,15 +408,17 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         as: "subscribers",
       },
     },
+    // stage 3 loolup all the subscribe to value that user subscribed
     {
       $lookup: {
-        from: "subscriptions",
+        from: "subscriptions", // because its store in database lowercase and purals form
         localField: "_id",
         foreignField: "subscriber",
         as: "subscribedTo", //meine kisko subscribed kaar rakha haai
       },
     },
     //add this two different fields
+    // stage 4 addfeilds and count value
     {
       $addFields: {
         subscribersCount: {
@@ -417,6 +429,8 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         },
         //TODO: $in: means prensent hai yaa nhi haai
         // AND In object ke andar ja ke bhi dekh leta hai aur array bhi
+
+        //check user subscribed or not
         isSubscribed: {
           $condi: {
             if: { $in: [req.user?._id, "$subscribers.subscriber"] },
@@ -427,6 +441,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
       },
     },
     //projection deta hai ki mein saari value ko mein vha pein projct nhi karunga vha pein jo bhi usko demand kar rha hai usko mein selected chize hi dunga
+    // stage 5 i want only selected value
     {
       $project: {
         fullName: 1,
@@ -449,13 +464,18 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, channel[0], "User channel fetched successfully"))
 })
 
+// get watch history function
 const getWatchHistory = asyncHandler(async (req, res) => {
   const user = await User.aggregate([
+    //stage 1  matching id feild to object id of current user
     {
       $match: {
         _id: new mongoose.Types.ObjectId(req.user._id),
+        // bez mongodb id a proper way like 'ObjectId('string')' but in aggregate function all code gose as a some so mongoose can't convert this so we convert like this kiuki hame req.user._id se string value recive hoti hai jo ki kafi nahi hai match karne ke liye
       },
     },
+    //stage 2 lookup from videos database to get all videos id in my users local feild
+
     {
       $lookup: {
         from: "videos",
@@ -463,6 +483,8 @@ const getWatchHistory = asyncHandler(async (req, res) => {
         foreignField: "_id",
         as: "watchHistory",
         pipeline: [
+          // adding another pipeline (nasted lookup)
+          //stage 1 lookup from users
           {
             $lookup: {
               from: "users",
@@ -470,6 +492,8 @@ const getWatchHistory = asyncHandler(async (req, res) => {
               foreignField: "_id",
               as: "owner",
               pipeline: [
+                // this nested pipeline add the value that i need in videoOwner feild
+                // stage 1 dont need all vlaue want only specific value
                 {
                   $project: {
                     fullName: 1,
@@ -477,9 +501,11 @@ const getWatchHistory = asyncHandler(async (req, res) => {
                     avatar: 1,
                   },
                 },
+                // stage 2 get data in object format
                 {
                   $addFields: {
                     //existing field override thy jaay
+                    // i want overwrite the existing value thats why same name
                     owner: {
                       //frontend ko direct object mil jayega aur usme dot krke sari values nikal legaa!
                       $first: "$owner",
