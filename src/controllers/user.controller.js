@@ -218,7 +218,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken
 
   if (!incomingRefreshToken) {
-    throw new ApiError(401, "unauthorized request")
+    throw new ApiError(401, "Unauthorized request")
   }
 
   try {
@@ -291,6 +291,37 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, {}, "Password changed successfully"))
+})
+
+//forgot password function
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body
+
+  if (!email) {
+    throw new ApiError(400, "Email is required")
+  }
+
+  const user = await User.findOne({ email })
+
+  if (!user) {
+    throw new ApiError(400, "Email is not registered")
+  }
+
+  //generate the reset token
+  const resetToken = await user.generateForgetPasswordToken()
+  console.log("resetToken", resetToken)
+  //save db
+  await user.save({ validateBeforeSave: false })
+
+  console.log(user)
+
+  const resetPasswordUrl = `${process.env.CORS_ORIGIN}/reset-password/${resetToken}`
+
+  const subject = "Reset Password"
+  const message = `You can reset your password by clicking <a href = ${resetPasswordUrl} target = "_blank">Reset your password</a>.\n If you have not requested this, kindly ignore it.`
+  try {
+    
+  } catch (error) {}
 })
 
 //get Current user
