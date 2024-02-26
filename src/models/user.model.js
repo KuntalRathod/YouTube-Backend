@@ -1,6 +1,7 @@
 import mongoose, { Schema } from "mongoose"
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
+import crypto from "crypto"
 
 const userSchema = new Schema(
   {
@@ -94,20 +95,15 @@ userSchema.methods.generateRefreshToken = function () {
   )
 }
 
-userSchema.methods.generateForgotPasswordToken = async function () {
+userSchema.methods.generateForgotPasswordToken = function () {
   const resetToken = crypto.randomBytes(20).toString("hex")
-
-  // Hash the resetToken using bcrypt
-  const hashedToken = await bcrypt.hash(resetToken, 10)
-  //10 means  represents the number of salt rounds, and you can adjust it based on your security requirements. Higher numbers provide better security but require more computational resources.
-
-  // Set the hashed token to the passwordResetToken property
-  this.passwordResetToken = hashedToken
-
-  // Set the expiry time (15 minutes from now)
+  // hash the generate resetToken with sh256 algoritham and store in the database
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex")
+  // expiry time
   this.passwordResetTokenExpiry = Date.now() + 15 * 60 * 1000
-
-  // Return the original resetToken (for external use, if needed)
   return resetToken
 }
 

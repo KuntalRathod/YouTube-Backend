@@ -1,6 +1,7 @@
 import { Router } from "express"
 import {
   changeCurrentPassword,
+  forgotPassword,
   getCurrentUser,
   getUserChannelProfile,
   getWatchHistory,
@@ -8,6 +9,7 @@ import {
   logoutUser,
   refreshAccessToken,
   registerUser,
+  resetPassword,
   updateAccountDetails,
   updateUserAvatar,
   updateUserCoverImage,
@@ -48,9 +50,11 @@ router
   .route("/cover-image")
   .patch(verifyJWT, upload.single("coverImage"), updateUserCoverImage)
 
-router
-  .route("/c/:username")
-  .get(verifyJWT, getUserChannelProfile)
+router.route("/reset").post(forgotPassword)
+
+//params se data
+router.route("/c/:username").get(verifyJWT, getUserChannelProfile)
+router.route("/reset/:resetToken").post(resetPassword)
 
 router.route("/history").get(verifyJWT, getWatchHistory)
 

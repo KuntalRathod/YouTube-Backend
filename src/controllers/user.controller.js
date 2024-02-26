@@ -5,6 +5,8 @@ import { deleteOnCloudinary, uploadOnCloudinary } from "../utils/Cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import jwt from "jsonwebtoken"
 import sendEmail from "../utils/services/sendEmail.service.js"
+import bcrypt from "bcrypt"
+import crypto from "crypto"
 
 //access and refresh token generate function
 const generateAccessTokenAndRefreshToken = async (userId) => {
@@ -309,7 +311,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
   }
 
   //generate the reset token
-  const resetToken = await user.generateForgetPasswordToken()
+  const resetToken = await user.generateForgotPasswordToken()
   console.log("resetToken", resetToken)
   //save db
   await user.save({ validateBeforeSave: false })
@@ -354,8 +356,47 @@ const resetPassword = asyncHandler(async (req, res) => {
   if (!password) {
     throw new ApiError(500, "Password is required")
   }
+  if (!resetToken) {
+    throw new ApiError(500, "resetToken is required")
+  }
 
+  //This JavaScript code is using the crypto module provided by Node.js to create a SHA-256 hash of a resetToken.
   // hashing the resetToken using sha256 since we have stored our resetToken in DB using the same algorithm
+  const passwordResetToken = crypto
+    .createHash("sha256") // This creates a new hash object that can be used to generate hash digests. The argument "sha256" specifies the hash algorithm to use.
+    .update(resetToken) // This updates the hash content with the given resetToken. The resetToken is the data to be hashed.
+    .digest("hex") // This generates the digest (the hashed output) of the updated data. The argument "hex" specifies that the output should be encoded in hexadecimal.
+
+  console.log(passwordResetToken)
+  //So, if the resetToken is "1234", the passwordResetToken will be the SHA-256 hash of "1234", and it will be logged to the console.
+
+  // checking token in db if it is not expire still valid
+  const user = await User.findOne({
+    passwordResetToken,
+    passwordResetTokenExpiry: { $gt: Date.now() },
+    //passwordResetToken matches the passwordResetToken provided.
+    //passwordResetTokenExpiry is greater than the current date and time (Date.now()).
+    //The $gt operator stands for "greater than". It selects those documents where the value of the field is greater than (i.e., later than) the specified value.
+    //So, this code is used to find a user who has a valid password reset token (i.e., the token has not expired).
+  })
+  console.log("user :", user)
+
+  if (!user) {
+    throw new ApiError(400, "Token is Expired or invalid , please try again")
+  }
+
+  //if the token is valid and not expired then update the password
+  user.password = password
+  user.forgotPasswordToken = undefined
+  user.forgotPasswordTokenExpiry = undefined
+
+  //save in db
+  await user.save({ validateBeforeSave: true })
+
+  //return response
+  return res
+    .status(200)
+    .json(new ApiResponse(200, password, "Password changed successfully!!! "))
 })
 
 //get Current user
@@ -620,10 +661,12 @@ export {
   logoutUser,
   refreshAccessToken,
   changeCurrentPassword,
-  getCurrentUser,
   updateAccountDetails,
   updateUserAvatar,
   updateUserCoverImage,
   getUserChannelProfile,
   getWatchHistory,
+  forgotPassword,
+  resetPassword,
+  getCurrentUser,
 }
