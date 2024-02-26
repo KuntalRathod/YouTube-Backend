@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { ApiError } from "../utils/ApiError.js"
 import { User } from "../models/user.model.js"
-import { uploadOnCloudinary } from "../utils/Cloudinary.js"
+import { deleteOnCloudinary, uploadOnCloudinary } from "../utils/Cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import jwt from "jsonwebtoken"
 
@@ -263,11 +263,15 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 //change password function
 const changeCurrentPassword = asyncHandler(async (req, res) => {
+  console.log(req.body)
   const { oldPassword, newPassword } = req.body
-
   // if (!(newPassword === confPassword)) {
   //   throw new ApiError()
   // }
+
+  if (!oldPassword || !newPassword) {
+    throw new ApiError(400, "OldPassward and NewPassword is required !!")
+  }
 
   const user = await User.findById(req.user?._id)
 
@@ -328,9 +332,15 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   }
 
   //delete privious avatar file on cloudinary
-  // const user = await User.findById(req.user?._id).select(
-  //   "-password -refreshToken"
-  // )
+  const user = await User.findById(req.user?._id).select(
+    "-password -refreshToken"
+  )
+
+  const previousAvatar = user.avatar
+
+  if (previousAvatar.public_id) {
+    await deleteOnCloudinary(previousAvatar.public_id)
+  }
 
   //upload in cloudinary and get a url file so
   const avatar = await uploadOnCloudinary(avatarLocalPath)
@@ -340,15 +350,23 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Error while uploading avatar")
   }
 
-  const user = await User.findByIdAndUpdate(
-    req.user?._id,
-    {
-      $set: {
-        avatar: avatar.url,
-      },
-    },
-    { new: true }
-  ).select("-password")
+  //store in database
+  user.avatar = {
+    key: avatar?.public_id,
+    url: avatar?.url,
+  }
+
+  await user.save({ validateBeforeSave })
+
+  // const user = await User.findByIdAndUpdate(
+  //   req.user?._id,
+  //   {
+  //     $set: {
+  //       avatar: avatar.url,
+  //     },
+  //   },
+  //   { new: true }
+  // ).select("-password")
 
   return res
     .status(200)

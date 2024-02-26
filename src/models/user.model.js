@@ -65,7 +65,7 @@ userSchema.pre("save", async function (next) {
 })
 
 userSchema.methods.isPasswordCorrect = async function (password) {
-  return bcrypt.compare(password, this.password)
+  return await bcrypt.compare(password, this.password)
 }
 
 userSchema.methods.generateAccessToken = function () {
@@ -112,6 +112,5 @@ userSchema.methods.generateForgotPasswordToken = async function () {
 }
 
 //Remember to handle asynchronous operations appropriately when calling this method, as bcrypt.hash is asynchronous and returns a Promise
-
 
 export const User = mongoose.model("User", userSchema)
