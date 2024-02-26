@@ -26,6 +26,7 @@ const sendEmail = async function (email, subject, message) {
     //text: "Body of the email",
   }
 
+  //try to in gihub resource contribute this error handling!!
   // Send the email
   await transporter.sendMail(mailOptions, (error, info) => {
     if (error) {

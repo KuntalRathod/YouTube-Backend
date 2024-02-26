@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js"
 import { deleteOnCloudinary, uploadOnCloudinary } from "../utils/Cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import jwt from "jsonwebtoken"
+import sendEmail from "../utils/services/sendEmail.service.js"
 
 //access and refresh token generate function
 const generateAccessTokenAndRefreshToken = async (userId) => {
@@ -320,8 +321,41 @@ const forgotPassword = asyncHandler(async (req, res) => {
   const subject = "Reset Password"
   const message = `You can reset your password by clicking <a href = ${resetPasswordUrl} target = "_blank">Reset your password</a>.\n If you have not requested this, kindly ignore it.`
   try {
-    
-  } catch (error) {}
+    await sendEmail(email, subject, message)
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { resetToken },
+          `Reset password token has been send to ${email}`
+        )
+      )
+  } catch (error) {
+    user.passwordResetToken = undefined
+    user.passwordResetTokenExpiry = undefined
+
+    //save in database
+    await user.save({ validateBeforeSave: false })
+    console.log(user)
+    throw new ApiError(
+      500,
+      error.message ||
+        "Something went wrong while sending reset email, Try again"
+    )
+  }
+})
+
+//reset password
+const resetPassword = asyncHandler(async (req, res) => {
+  const { resetToken } = req.params //extracting from the url
+  const { password } = req.body //extracing from body
+
+  if (!password) {
+    throw new ApiError(500, "Password is required")
+  }
+
+  // hashing the resetToken using sha256 since we have stored our resetToken in DB using the same algorithm
 })
 
 //get Current user
