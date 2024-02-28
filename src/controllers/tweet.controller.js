@@ -127,7 +127,7 @@ const deleteTweet = asyncHandler(async (req, res) => {
     throw new ApiError(403, "you dont have permission to delete this tweet")
   }
 
-  const deleteTweet = await Tweet.deleteOne(req.user._id)
+  const deleteTweet = await Tweet.deleteOne({_id: tweetId})   // contribute to the github 
 
   console.log("delete successfully :", deleteTweet)
 
