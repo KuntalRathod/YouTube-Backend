@@ -24,7 +24,9 @@ const createTweet = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Something went wrong while creating tweet")
   }
 
-  return res.status(200).json(200, tweet, "tweet created successfully!!!")
+  return res
+    .status(200)
+    .json(new ApiResponse(200, tweet, "tweet created successfully!!!"))
 })
 
 //get all tweets
@@ -76,7 +78,7 @@ const updateTweet = asyncHandler(async (req, res) => {
     throw new ApiError(400, "this tweet id is not valid")
   }
 
-  const tweet = await User.findById(tweetId)
+  const tweet = await Tweet.findById(tweetId)
 
   if (!tweet) {
     throw new ApiError(404, "this tweet is not found")
@@ -105,51 +107,38 @@ const updateTweet = asyncHandler(async (req, res) => {
   //return response
   return res
     .status(201)
-    .json(
-      new ApiResponse(
-        200,
-        updateTweet,
-        "Tweet updated successfully!!"
-      )
-    )
+    .json(new ApiResponse(200, updateTweet, "Tweet updated successfully!!"))
 })
 
 const deleteTweet = asyncHandler(async (req, res) => {
   //TODO: delete tweet
   const { tweetId } = req.params
-  
+
   if (!isValidObjectId(tweetId)) {
-    throw new ApiError(400,"this tweet id is not valid !!")
+    throw new ApiError(400, "this tweet id is not valid !!")
   }
 
-  const tweet = await Tweet.findById(userId)
+  const tweet = await Tweet.findById(tweetId)
 
   if (!tweet) {
-    throw new ApiError(404,"this tweet is not found")
+    throw new ApiError(404, "this tweet is not found")
   }
   if (tweet.owner.toString() !== req.user._id.toString()) {
-    throw new ApiError(403,"you dont have permission to delete this tweet")
+    throw new ApiError(403, "you dont have permission to delete this tweet")
   }
 
-  const deleteTweet = await Tweet.findOne(req.user._id)
+  const deleteTweet = await Tweet.deleteOne(req.user._id)
 
-  console.log("delete successfully :",deleteTweet)
+  console.log("delete successfully :", deleteTweet)
 
   if (!deleteTweet) {
-    throw new ApiError(404,"Something went wrong while deleting this tweet!!")
+    throw new ApiError(404, "Something went wrong while deleting this tweet!!")
   }
 
   //return res
   return res
     .status(201)
-    .json(
-      new ApiResponse(
-        200,
-        deleteTweet,
-        "Tweet delete successfully!!"
-      ))
-
-
+    .json(new ApiResponse(200, deleteTweet, "Tweet delete successfully!!"))
 })
 
 export { createTweet, getUserTweets, updateTweet, deleteTweet }

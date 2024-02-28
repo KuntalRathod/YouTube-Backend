@@ -5,7 +5,7 @@ import { deleteOnCloudinary, uploadOnCloudinary } from "../utils/Cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import jwt from "jsonwebtoken"
 import sendEmail from "../utils/services/sendEmail.service.js"
-import bcrypt from "bcrypt"
+// import bcrypt from "bcrypt"
 import crypto from "crypto"
 
 //access and refresh token generate function
