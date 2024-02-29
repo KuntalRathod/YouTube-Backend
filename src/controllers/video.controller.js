@@ -81,10 +81,11 @@ const updateVideo = asyncHandler(async (req, res) => {
 
   //if any field is not provide
   if (
-    !thumbnailFile ||
-    !(title || title?.trim() === "") ||
-    !description ||
-    description?.trim() === ""
+    !(
+      thumbnailFile ||
+      !(!title || title?.trim() === "") ||
+      !(!description || description?.trim() === "")
+    )
   ) {
     throw new ApiError(400, "update fields are required!")
   }
