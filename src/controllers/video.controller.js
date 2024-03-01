@@ -73,7 +73,7 @@ const updateVideo = asyncHandler(async (req, res) => {
   //TODO: update video details like title, description, thumbnail
   const { videoId } = req.params
   const { title, description } = req.body
-  const thumbnailFile = req.path?.url
+  const thumbnailFile = req.file?.path
 
   if (!isValidObjectId(videoId)) {
     throw new ApiError(400, "this video id is not valid")
@@ -90,6 +90,7 @@ const updateVideo = asyncHandler(async (req, res) => {
     throw new ApiError(400, "update fields are required!")
   }
 
+  //find video
   const previousVideo = await Video.findOne({
     _id: videoId,
   })
@@ -132,17 +133,19 @@ const updateVideo = asyncHandler(async (req, res) => {
   })
 
   if (!updateDetails) {
-    throw new ApiError(500,"Something went wrong updating video details")
+    throw new ApiError(500, "Something went wrong updating video details")
   }
 
   //return res
   return res
     .status(201)
-    .json(new ApiResponse(
-      200,
-      {updateDetails},
-      "Video details update successfully!"
-    ))
+    .json(
+      new ApiResponse(
+        200,
+        { updateDetails },
+        "Video details update successfully!"
+      )
+    )
 })
 
 const getAllVideos = asyncHandler(async (req, res) => {
