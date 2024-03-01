@@ -5,6 +5,7 @@ import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { deleteOnCloudinary, uploadOnCloudinary } from "../utils/Cloudinary.js"
+import { useId } from "react/cjs/react.production.min.js"
 
 const publishAVideo = asyncHandler(async (req, res) => {
   // TODO: get video, upload to cloudinary, create video
@@ -158,28 +159,86 @@ const getVideoById = asyncHandler(async (req, res) => {
   }
 
   const video = await Video.findById({
-    _id : videoId,
+    _id: videoId,
   })
 
   if (!video) {
-    throw new ApiError(404,"Video is not found!!")
+    throw new ApiError(404, "Video is not found!!")
   }
 
   //return res
   return res
     .status(201)
-    .json(
-      new ApiResponse(
-        200,
-        video,
-        "video fetched successfully!"
-      )
-    )
+    .json(new ApiResponse(200, video, "video fetched successfully!"))
 })
 
 const getAllVideos = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
   //TODO: get all videos based on query, sort, pagination
+  const {
+    page = 1,
+    limit = 10,
+    query = `/^video/`,
+    sortBy = "createdAt",
+    sortType = 1,
+    userId = req.user._id,
+  } = req.query
+
+  //find user in db
+  const user = await User.findById({
+    _id: userId,
+  })
+
+  if (!user) {
+    throw new ApiError(404, "User not found!!")
+  }
+
+  // This is a MongoDB aggregation pipeline that is used to fetch videos based on certain criteria
+  const getAllVideosAggreagate = await Video.aggregate([
+    {
+      // The $match stage filters the documents to pass only the documents that match the specified condition(s) to the next pipeline stage.
+      $match: {
+        // This line matches videos where the videoOwner field is equal to the userId
+        videoOwner: new mongoose.Types.ObjectId(useId),
+        // This line matches videos where the title or description fields contain the query string
+        $or: [
+          {
+            title: { $regex: query, $options: "i" },
+          },
+          {
+            description: { $regex: query, $options: "i" },
+          },
+        ],
+      },
+    },
+    {
+      // The $sort stage sorts the documents. The sort order is determined by the value of 'sortBy' and 'sortType'
+      $sort: {
+        [sortBy]: sortType,
+      },
+    },
+    {
+      // The $skip stage skips a specified number of documents. It is used here for pagination.
+      $skip: (page - 1) * limit,
+    },
+    {
+      // The $limit stage limits the number of documents in the aggregation pipeline. It is used here for pagination.
+      $limit: parseInt(limit),
+    },
+  ])
+  // This line paginates the results of the aggregation
+  Video.aggregatePaginate(getAllVideosAggreagate, { page, limit })
+    .then((result) => {
+      // If the aggregation and pagination are successful, a 200 status code and the results are returned
+      return res
+        .status(201)
+        .json(
+          new ApiResponse(
+            200,
+            result,
+            "Fetched all videos successfully!!"
+          ) 
+        )
+    })
 })
 
 const deleteVideo = asyncHandler(async (req, res) => {
