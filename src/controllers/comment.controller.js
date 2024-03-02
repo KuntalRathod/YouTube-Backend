@@ -3,6 +3,7 @@ import { Comment } from "../models/comment.model.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
+import { Tweet } from "../models/tweet.model.js"
 
 const addCommentToVideo = asyncHandler(async (req, res) => {
   // TODO: add a comment to a video
@@ -41,12 +42,38 @@ const addCommentToVideo = asyncHandler(async (req, res) => {
 
 const addCommentToTweet = asyncHandler(async (req, res) => {
   // TODO: add a comment to a Tweet
-  const { content } = req.body
+  const { comment } = req.body
   const { tweetId } = req.params
 
+  console.log("comment :", comment)
+  console.log("tweetId : ", tweetId)
+
   if (!content || content?.trim() === "") {
-    throw new ApiError(400,"Content is required!!") 
+    throw new ApiError(400, "Content is required!!")
   }
+
+  if (!isValidObjectId(tweetId)) {
+    throw new ApiError(400, "this tweet id is not valid!!")
+  }
+
+  const commentTweet = await Tweet.create({
+    content: comment,
+    tweetId: tweetId,
+    owner: req.user._id
+  })
+
+  if (!commentTweet) {
+    throw new ApiError(500,"Something went wrong while creating tweet comment")
+  }
+  //return res
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(
+        200,
+        commentTweet,
+        "comment tweet created successfully!!"
+      ))
 })
 
 const getVideoComments = asyncHandler(async (req, res) => {
