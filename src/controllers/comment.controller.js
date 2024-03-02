@@ -4,6 +4,7 @@ import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { Tweet } from "../models/tweet.model.js"
+import { Video } from "../models/video.model.js"
 
 const addCommentToVideo = asyncHandler(async (req, res) => {
   // TODO: add a comment to a video
@@ -59,21 +60,18 @@ const addCommentToTweet = asyncHandler(async (req, res) => {
   const commentTweet = await Tweet.create({
     content: comment,
     tweetId: tweetId,
-    owner: req.user._id
+    owner: req.user._id,
   })
 
   if (!commentTweet) {
-    throw new ApiError(500,"Something went wrong while creating tweet comment")
+    throw new ApiError(500, "Something went wrong while creating tweet comment")
   }
   //return res
   return res
     .status(201)
     .json(
-      new ApiResponse(
-        200,
-        commentTweet,
-        "comment tweet created successfully!!"
-      ))
+      new ApiResponse(200, commentTweet, "comment tweet created successfully!!")
+    )
 })
 
 const getVideoComments = asyncHandler(async (req, res) => {
@@ -81,9 +79,38 @@ const getVideoComments = asyncHandler(async (req, res) => {
   const { videoId } = req.params
   const { page = 1, limit = 10 } = req.query
 
-  // if (!isValidObjectId(videoId)) {
-  //     throw new ApiError(400,"this video id is not valid!!")
-  // }
+  if (!isValidObjectId(videoId)) {
+    throw new ApiError(400, "this video id is not valid!!")
+  }
+
+  //find the video in the database
+  const video = await Video.findById(videoId)
+
+  if (!video) {
+    throw new ApiError(404, "video not found!!")
+  }
+
+  //match and find all comments
+  const aggregateComments = await Comment.aggregate([
+    {
+      $match: {
+        video: new mongoose.Types.ObjectId(videoId),
+      },
+    },
+  ])
+
+  Comment.aggregatePaginate(aggregateComments, {
+    page,
+    limit
+  }).then((result) => {
+      return res
+        .status(201)
+        .json(new ApiResponse(
+          201,
+          result,
+          "all video comments fetched successfully"
+        ))
+  })
 })
 
 const getTweetComments = asyncHandler(async (req, res) => {
