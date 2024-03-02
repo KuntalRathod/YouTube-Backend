@@ -101,20 +101,51 @@ const getVideoComments = asyncHandler(async (req, res) => {
 
   Comment.aggregatePaginate(aggregateComments, {
     page,
-    limit
+    limit,
   }).then((result) => {
-      return res
-        .status(201)
-        .json(new ApiResponse(
-          201,
-          result,
-          "all video comments fetched successfully"
-        ))
+    return res
+      .status(201)
+      .json(
+        new ApiResponse(201, result, "all video comments fetched successfully")
+      )
   })
 })
 
 const getTweetComments = asyncHandler(async (req, res) => {
   // TODO: add a comment to a Tweet
+  const { tweetId } = req.params
+  const { page = 1, limit = 10 } = req.query
+
+  if (!isValidObjectId(tweetId)) {
+    throw new ApiError(400, "this tweet id is not valid!!")
+  }
+
+  //find tweet in the database
+  const tweetComment = await Tweet.findById(tweetId)
+
+  if (!tweetComment) {
+    throw new ApiError("tweet comment is not found")
+  }
+
+  //match and find all comments
+  const aggregateTweetComments = await Tweet.aggregate([
+    {
+      $match: {
+        tweet : new mongoose.Types.ObjectId(tweetId)
+      }
+    }
+  ])
+    Tweet.aggregatePaginate(aggregateTweetComments, {
+      page,
+      limit,
+    }).then((result) => {
+      return res
+        .status(201).json(new ApiResponse(
+          200,
+          tweetComment,
+          "tweet comments fetched succussfully!!"
+        ))
+    })
 })
 
 const updateCommentToVideo = asyncHandler(async (req, res) => {
