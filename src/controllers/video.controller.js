@@ -284,31 +284,62 @@ const deleteVideo = asyncHandler(async (req, res) => {
     await deleteOnCloudinary(video?.videoFile?.public_id, "video")
   }
   if (video?.thumbnail) {
-    deleteOnCloudinary(video?.thumbnail?.public_id,"any")
+    deleteOnCloudinary(video?.thumbnail?.public_id, "any")
   }
-
 
   const deleteResponse = await Video.findByIdAndDelete(videoId)
 
   if (!deleteResponse) {
-    throw new ApiError(400,"Something went wrong while deleting file or video!!")
+    throw new ApiError(
+      400,
+      "Something went wrong while deleting file or video!!"
+    )
   }
 
   //return res
   return res
     .status(201)
-    .json(new ApiResponse(
-      200,
-      deleteResponse,
-      "video or file delete successfully!!"
-    ))
+    .json(
+      new ApiResponse(
+        200,
+        deleteResponse,
+        "video or file delete successfully!!"
+      )
+    )
 })
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
   const { videoId } = req.params
-  
 
+  if (!isValidObjectId(videoId)) {
+    throw new ApiError(400, "this video is is not valid!!")
+  }
 
+  //find video in db
+  const video = await Video.findById({
+    _id: videoId,
+  })
+
+  if (!video) {
+    throw new ApiError(404, " video is not found!!")
+  }
+
+  if (video?.owner?.toString() !== req.user._id?.toString()) {
+    throw new ApiError(400, "You don't have permission to toggle this video!!")
+  }
+
+  //toggle video status
+  video.isPublished = !video.isPublished
+
+  await video.save({ validateBeforeSave: false })
+
+  return res
+    .status(201)
+    .json(new ApiResponse(
+      200,
+      video,
+      "toggle video successfully!!!"
+    ))
 })
 
 export {
