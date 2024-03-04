@@ -131,21 +131,24 @@ const getTweetComments = asyncHandler(async (req, res) => {
   const aggregateTweetComments = await Tweet.aggregate([
     {
       $match: {
-        tweet : new mongoose.Types.ObjectId(tweetId)
-      }
-    }
+        tweet: new mongoose.Types.ObjectId(tweetId),
+      },
+    },
   ])
-    Tweet.aggregatePaginate(aggregateTweetComments, {
-      page,
-      limit,
-    }).then((result) => {
-      return res
-        .status(201).json(new ApiResponse(
+  Tweet.aggregatePaginate(aggregateTweetComments, {
+    page,
+    limit,
+  }).then((result) => {
+    return res
+      .status(201)
+      .json(
+        new ApiResponse(
           200,
           tweetComment,
           "tweet comments fetched succussfully!!"
-        ))
-    })
+        )
+      )
+  })
 })
 
 const updateCommentToVideo = asyncHandler(async (req, res) => {
