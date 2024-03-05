@@ -156,6 +156,7 @@ const updateCommentToVideo = asyncHandler(async (req, res) => {
 })
 
 const updateCommentToTweet = asyncHandler(async (req, res) => {
+  // TODO: update a comment to Tweet
 })
 
 const deleteCommentToVideo = asyncHandler(async (req, res) => {
