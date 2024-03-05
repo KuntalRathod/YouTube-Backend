@@ -164,6 +164,7 @@ const deleteCommentToVideo = asyncHandler(async (req, res) => {
 })
 
 const deleteCommentToTweet = asyncHandler(async (req, res) => {
+  // TODO: Delete a comment to tweet
 })
 
 export {
