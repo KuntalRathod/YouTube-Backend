@@ -117,10 +117,10 @@ const getTweetComments = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10 } = req.query
 
   if (!isValidObjectId(tweetId)) {
-    throw new ApiError(400, "this tweet id is not valid!!")
+    throw new ApiError(400, "this tweet id is not valid!!!")
   }
 
-  //find tweet in the database
+  //find the tweet in the database
   const tweetComment = await Tweet.findById(tweetId)
 
   if (!tweetComment) {
