@@ -23,6 +23,7 @@ const addCommentToVideo = asyncHandler(async (req, res) => {
     throw new ApiError(400, "This video id is not valid!!")
   }
 
+  //save in db and create all the fields
   const videoComment = await Comment.create({
     content: comment,
     video: videoId,
