@@ -30,6 +30,8 @@ const addCommentToVideo = asyncHandler(async (req, res) => {
     owner: req.user._id,
   })
 
+  console.log(videoComment);
+
   if (!videoComment) {
     throw new ApiError(500, "something went wrong while creating video comment")
   }
@@ -59,6 +61,7 @@ const addCommentToTweet = asyncHandler(async (req, res) => {
     throw new ApiError(400, "this tweet id is not valid!!")
   }
 
+  //save in db and create all the fields
   const commentTweet = await Tweet.create({
     content: comment,
     tweetId: tweetId,
