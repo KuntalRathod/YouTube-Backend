@@ -128,7 +128,6 @@ const deleteTweet = asyncHandler(async (req, res) => {
   }
 
   const deleteTweet = await Tweet.deleteOne({ _id: tweetId })   // contribute to the github 
-  console.log(deleteTweet);
 
   console.log("delete successfully :", deleteTweet)
 
