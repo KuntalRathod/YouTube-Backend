@@ -292,6 +292,37 @@ const deleteCommentToVideo = asyncHandler(async (req, res) => {
 
 const deleteCommentToTweet = asyncHandler(async (req, res) => {
   // TODO: Delete a comment to tweet
+  const { commentId } = req.params
+
+  if (!isValidObjectId(commentId)) {
+    throw new ApiError(403,"this is comment id is not valid!!")
+  }
+
+  const comment = await Comment.findById(commentId)
+
+  if (!comment) {
+    throw new ApiError(404,"comment not found!!")
+  }
+
+  if (comment?.owner?.toString() !== req.user._id?.toString()) {
+    throw new ApiError(500,"you dont have permission to delete this tweet comment!!")
+  }
+
+  const deletetweet = await Comment.deleteOne({ _id: commentId })
+
+  if (!deletetweet) {
+    throw new ApiError(403,"something went wrong while deleting this comment tweet!!")
+  }
+
+  //return res
+  return res
+    .status(201)
+    .json(new ApiResponse(
+      200,
+      deletetweet,
+      "tweet comment deleted successfully!!!"
+    ))
+  
 })
 
 export {
