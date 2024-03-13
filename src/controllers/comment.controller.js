@@ -59,7 +59,7 @@ const addCommentToTweet = asyncHandler(async (req, res) => {
   }
 
   //save in db and create all the fields
-  const commentTweet = await Tweet.create({
+  const commentTweet = await Comment.create({
     content: comment,
     tweetId: tweetId,
     owner: req.user._id,
@@ -262,44 +262,32 @@ const deleteCommentToVideo = asyncHandler(async (req, res) => {
   const comment = await Comment.findById(commentId)
 
   if (!comment) {
-    throw new ApiError(404,"Comment is not found!!") 
+    throw new ApiError(404, "Comment is not found!!")
   }
 
   if (comment?.owner?.toString() !== req.user._id?.toString()) {
-    throw new ApiError(500,"you dont have permission to delete this comment!!")
+    throw new ApiError(500, "you dont have permission to delete this comment!!")
   }
 
-  const deleteComment = await Comment.deleteOne({_id: commentId})
-  
+  const deleteComment = await Comment.deleteOne({ _id: commentId })
+
   if (!deleteComment) {
-    throw new ApiError(500,"Something went wrong while deleting this comment!!")
+    throw new ApiError(
+      500,
+      "Something went wrong while deleting this comment!!"
+    )
   }
 
   //return res
   return res
     .status(201)
-    .json(new ApiResponse(
-      200,
-      deleteComment,
-      "video comment deleted successfully!!!"
-    ))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    .json(
+      new ApiResponse(
+        200,
+        deleteComment,
+        "video comment deleted successfully!!!"
+      )
+    )
 })
 
 const deleteCommentToTweet = asyncHandler(async (req, res) => {
