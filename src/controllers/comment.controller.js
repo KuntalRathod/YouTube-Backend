@@ -15,14 +15,13 @@ const addCommentToVideo = asyncHandler(async (req, res) => {
   console.log("comment :", comment)
   console.log("videoId : ", videoId)
 
-  if (!comment || comment?.trim() === "" ) {
+  if (!comment || comment?.trim() === "") {
     throw new ApiError(400, "Comment is required")
   }
 
   if (!isValidObjectId(videoId)) {
     throw new ApiError(400, "This video id is not valid!!")
   }
-  
 
   //save in db and create all the fields
   const videoComment = await Comment.create({
@@ -30,7 +29,6 @@ const addCommentToVideo = asyncHandler(async (req, res) => {
     video: videoId,
     owner: req.user._id,
   })
-
 
   if (!videoComment) {
     throw new ApiError(500, "something went wrong while creating video comment")
@@ -157,6 +155,54 @@ const getTweetComments = asyncHandler(async (req, res) => {
 
 const updateCommentToVideo = asyncHandler(async (req, res) => {
   // TODO: update a comment to Video
+  const { newContent } = req.body
+  const { commentId } = req.params
+
+  if (!newContent || newContent?.trim() === 0) {
+    throw new ApiError(400, "content is required!!!")
+  }
+  if (isValidObjectId(commentId)) {
+    throw new ApiError(400, "comment id is not valid")
+  }
+
+  const comment = await Comment.findById(commentId)
+
+  if (!comment) {
+    throw new ApiError(404, "Comment is not found!!")
+  }
+
+  if (comment.owner.toString() !== req.user._id.toString()) {
+    throw new ApiError(403, "you dont have permission to update this comment!")
+  }
+
+  const updateComment = await Comment.findByIdAndUpdate(
+    commentId,
+    {
+      $set: {
+        content: newContent,
+      },
+    },
+    {
+      new: true,
+    }
+  )
+
+  if (!updateComment) {
+    throw new ApiError(
+      400,
+      "Something went wrong while updating this comment!!"
+    )
+  }
+
+  //return res
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(
+        200,
+        updateComment,
+        "Comment updated successfully!!"
+    ))
 })
 
 const updateCommentToTweet = asyncHandler(async (req, res) => {
