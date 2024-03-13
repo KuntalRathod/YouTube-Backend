@@ -171,7 +171,7 @@ const updateCommentToVideo = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Comment is not found!!")
   }
 
-  if (comment.owner.toString() !== req.user._id.toString()) {
+  if (comment?.owner.toString() !== req.user._id?.toString()) {
     throw new ApiError(403, "you dont have permission to update this comment!")
   }
 
@@ -197,16 +197,57 @@ const updateCommentToVideo = asyncHandler(async (req, res) => {
   //return res
   return res
     .status(201)
-    .json(
-      new ApiResponse(
-        200,
-        updateComment,
-        "Comment updated successfully!!"
-    ))
+    .json(new ApiResponse(200, updateComment, "Comment updated successfully!!"))
 })
 
 const updateCommentToTweet = asyncHandler(async (req, res) => {
   // TODO: update a comment to Tweet
+  const { newContent } = req.body
+  const { commentId } = req.params
+
+  if (!newContent || newContent?.trim() === "") {
+    throw new ApiError(400, "new content is required!!")
+  }
+
+  if (isValidObjectId(commentId)) {
+    throw new ApiError(400, "this comment id is not valid")
+  }
+
+  const comment = await Comment.findById(commentId)
+
+  if (!comment) {
+    throw new ApiError(404, "This tweet is not found!!!")
+  }
+
+  if (comment?.owner?.toString() !== req.user._id?.toString()) {
+    throw new ApiError(403, "you dont have permission to update this comment!!")
+  }
+
+  const updateComment = await Comment.findByIdAndUpdate(
+    commentId,
+    {
+      $set: {
+        content: newContent,
+      },
+    },
+    {
+      new: true,
+    }
+  )
+
+  if (!updateComment) {
+    throw new ApiError(
+      403,
+      "something went wrong while updating this comment!!"
+    )
+  }
+
+  //return res
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(200, updateComment, "comment updated successfully!!!")
+    )
 })
 
 const deleteCommentToVideo = asyncHandler(async (req, res) => {
