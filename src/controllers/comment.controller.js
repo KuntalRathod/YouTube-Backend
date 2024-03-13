@@ -161,7 +161,7 @@ const updateCommentToVideo = asyncHandler(async (req, res) => {
   if (!newContent || newContent?.trim() === 0) {
     throw new ApiError(400, "content is required!!!")
   }
-  if (isValidObjectId(commentId)) {
+  if (!isValidObjectId(commentId)) {
     throw new ApiError(400, "comment id is not valid")
   }
 
@@ -209,7 +209,7 @@ const updateCommentToTweet = asyncHandler(async (req, res) => {
     throw new ApiError(400, "new content is required!!")
   }
 
-  if (isValidObjectId(commentId)) {
+  if (!isValidObjectId(commentId)) {
     throw new ApiError(400, "this comment id is not valid")
   }
 
@@ -252,6 +252,54 @@ const updateCommentToTweet = asyncHandler(async (req, res) => {
 
 const deleteCommentToVideo = asyncHandler(async (req, res) => {
   // TODO: Delete a comment to Video
+
+  const { commentId } = req.params
+
+  if (!isValidObjectId(commentId)) {
+    throw new ApiError(400, "This comment id is not valid!")
+  }
+
+  const comment = await Comment.findById(commentId)
+
+  if (!comment) {
+    throw new ApiError(404,"Comment is not found!!") 
+  }
+
+  if (comment?.owner?.toString() !== req.user._id?.toString()) {
+    throw new ApiError(500,"you dont have permission to delete this comment!!")
+  }
+
+  const deleteComment = await Comment.deleteOne({_id: commentId})
+  
+  if (!deleteComment) {
+    throw new ApiError(500,"Something went wrong while deleting this comment!!")
+  }
+
+  //return res
+  return res
+    .status(201)
+    .json(new ApiResponse(
+      200,
+      deleteComment,
+      "video comment deleted successfully!!!"
+    ))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 })
 
 const deleteCommentToTweet = asyncHandler(async (req, res) => {
