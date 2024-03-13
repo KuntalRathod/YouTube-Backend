@@ -50,7 +50,7 @@ const addCommentToTweet = asyncHandler(async (req, res) => {
   console.log("comment :", comment)
   console.log("tweetId : ", tweetId)
 
-  if (!content || content?.trim() === "") {
+  if (!comment || comment?.trim() === "") {
     throw new ApiError(400, "Content is required!!")
   }
 
@@ -61,7 +61,7 @@ const addCommentToTweet = asyncHandler(async (req, res) => {
   //save in db and create all the fields
   const commentTweet = await Comment.create({
     content: comment,
-    tweetId: tweetId,
+    tweet: tweetId,
     owner: req.user._id,
   })
 
