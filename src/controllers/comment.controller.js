@@ -218,14 +218,14 @@ const getTweetComments = asyncHandler(async (req, res) => {
   }
 
   //match and find all comments
-  const aggregateTweetComments = await Tweet.aggregate([
+  const aggregateComments = await Tweet.aggregate([
     {
       $match: {
         tweet: new mongoose.Types.ObjectId(tweetId),
       },
     },
   ])
-  Tweet.aggregatePaginate(aggregateTweetComments, {
+  Comment.aggregatePaginate(aggregateComments, {
     page,
     limit,
   }).then((result) => {
@@ -238,6 +238,8 @@ const getTweetComments = asyncHandler(async (req, res) => {
           "tweet comments fetched succussfully!!"
         )
       )
+  }).catch((error) => {
+    throw new ApiError(500,"something went wrong while fetching tweet comments!, error")
   })
 })
 
