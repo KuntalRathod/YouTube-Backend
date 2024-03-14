@@ -42,40 +42,6 @@ const addCommentToVideo = asyncHandler(async (req, res) => {
     )
 })
 
-const addCommentToTweet = asyncHandler(async (req, res) => {
-  // TODO: add a comment to a Tweet
-  const { comment } = req.body
-  const { tweetId } = req.params
-
-  console.log("comment :", comment)
-  console.log("tweetId : ", tweetId)
-
-  if (!comment || comment?.trim() === "") {
-    throw new ApiError(400, "Content is required!!")
-  }
-
-  if (!isValidObjectId(tweetId)) {
-    throw new ApiError(400, "this tweet id is not valid!!")
-  }
-
-  //save in db and create all the fields
-  const commentTweet = await Comment.create({
-    content: comment,
-    tweet: tweetId,
-    owner: req.user._id,
-  })
-
-  if (!commentTweet) {
-    throw new ApiError(500, "Something went wrong while creating tweet comment")
-  }
-  //return res
-  return res
-    .status(201)
-    .json(
-      new ApiResponse(200, commentTweet, "comment tweet created successfully!!")
-    )
-})
-
 const getVideoComments = asyncHandler(async (req, res) => {
   //TODO: get all comments for a video
   const { videoId } = req.params
@@ -109,46 +75,6 @@ const getVideoComments = asyncHandler(async (req, res) => {
       .status(201)
       .json(
         new ApiResponse(201, result, "all video comments fetched successfully")
-      )
-  })
-})
-
-const getTweetComments = asyncHandler(async (req, res) => {
-  // TODO: add a comment to a Tweet
-  const { tweetId } = req.params
-  const { page = 1, limit = 10 } = req.query
-
-  if (!isValidObjectId(tweetId)) {
-    throw new ApiError(400, "this tweet id is not valid!!!")
-  }
-
-  //find the tweet in the database
-  const tweetComment = await Tweet.findById(tweetId)
-
-  if (!tweetComment) {
-    throw new ApiError("tweet comment is not found")
-  }
-
-  //match and find all comments
-  const aggregateTweetComments = await Tweet.aggregate([
-    {
-      $match: {
-        tweet: new mongoose.Types.ObjectId(tweetId),
-      },
-    },
-  ])
-  Tweet.aggregatePaginate(aggregateTweetComments, {
-    page,
-    limit,
-  }).then((result) => {
-    return res
-      .status(201)
-      .json(
-        new ApiResponse(
-          200,
-          tweetComment,
-          "tweet comments fetched succussfully!!"
-        )
       )
   })
 })
@@ -200,6 +126,121 @@ const updateCommentToVideo = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, updateComment, "Comment updated successfully!!"))
 })
 
+const deleteCommentToVideo = asyncHandler(async (req, res) => {
+  // TODO: Delete a comment to Video
+
+  const { commentId } = req.params
+
+  if (!isValidObjectId(commentId)) {
+    throw new ApiError(400, "This comment id is not valid!")
+  }
+
+  const comment = await Comment.findById(commentId)
+
+  if (!comment) {
+    throw new ApiError(404, "Comment is not found!!")
+  }
+
+  if (comment?.owner?.toString() !== req.user._id?.toString()) {
+    throw new ApiError(500, "you dont have permission to delete this comment!!")
+  }
+
+  const deleteComment = await Comment.deleteOne({ _id: commentId })
+
+  if (!deleteComment) {
+    throw new ApiError(
+      500,
+      "Something went wrong while deleting this comment!!"
+    )
+  }
+
+  //return res
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(
+        200,
+        deleteComment,
+        "video comment deleted successfully!!!"
+      )
+    )
+})
+
+
+const addCommentToTweet = asyncHandler(async (req, res) => {
+  // TODO: add a comment to a Tweet
+  const { comment } = req.body
+  const { tweetId } = req.params
+
+  console.log("comment :", comment)
+  console.log("tweetId : ", tweetId)
+
+  if (!comment || comment?.trim() === "") {
+    throw new ApiError(400, "Content is required!!")
+  }
+
+  if (!isValidObjectId(tweetId)) {
+    throw new ApiError(400, "this tweet id is not valid!!")
+  }
+
+  //save in db and create all the fields
+  const commentTweet = await Comment.create({
+    content: comment,
+    tweet: tweetId,
+    owner: req.user._id,
+  })
+
+  if (!commentTweet) {
+    throw new ApiError(500, "Something went wrong while creating tweet comment")
+  }
+  //return res
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(200, commentTweet, "comment tweet created successfully!!")
+    )
+})
+
+const getTweetComments = asyncHandler(async (req, res) => {
+  // TODO: add a comment to a Tweet
+  const { tweetId } = req.params
+  const { page = 1, limit = 10 } = req.query
+
+  if (!isValidObjectId(tweetId)) {
+    throw new ApiError(400, "this tweet id is not valid!!!")
+  }
+
+  //find the tweet in the database
+  const tweetComment = await Tweet.findById(tweetId)
+
+  if (!tweetComment) {
+    throw new ApiError("tweet comment is not found")
+  }
+
+  //match and find all comments
+  const aggregateTweetComments = await Tweet.aggregate([
+    {
+      $match: {
+        tweet: new mongoose.Types.ObjectId(tweetId),
+      },
+    },
+  ])
+  Tweet.aggregatePaginate(aggregateTweetComments, {
+    page,
+    limit,
+  }).then((result) => {
+    return res
+      .status(201)
+      .json(
+        new ApiResponse(
+          200,
+          tweetComment,
+          "tweet comments fetched succussfully!!"
+        )
+      )
+  })
+})
+
 const updateCommentToTweet = asyncHandler(async (req, res) => {
   // TODO: update a comment to Tweet
   const { newContent } = req.body
@@ -247,46 +288,6 @@ const updateCommentToTweet = asyncHandler(async (req, res) => {
     .status(201)
     .json(
       new ApiResponse(200, updateComment, "comment updated successfully!!!")
-    )
-})
-
-const deleteCommentToVideo = asyncHandler(async (req, res) => {
-  // TODO: Delete a comment to Video
-
-  const { commentId } = req.params
-
-  if (!isValidObjectId(commentId)) {
-    throw new ApiError(400, "This comment id is not valid!")
-  }
-
-  const comment = await Comment.findById(commentId)
-
-  if (!comment) {
-    throw new ApiError(404, "Comment is not found!!")
-  }
-
-  if (comment?.owner?.toString() !== req.user._id?.toString()) {
-    throw new ApiError(500, "you dont have permission to delete this comment!!")
-  }
-
-  const deleteComment = await Comment.deleteOne({ _id: commentId })
-
-  if (!deleteComment) {
-    throw new ApiError(
-      500,
-      "Something went wrong while deleting this comment!!"
-    )
-  }
-
-  //return res
-  return res
-    .status(201)
-    .json(
-      new ApiResponse(
-        200,
-        deleteComment,
-        "video comment deleted successfully!!!"
-      )
     )
 })
 
