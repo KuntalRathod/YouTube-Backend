@@ -213,12 +213,14 @@ const getTweetComments = asyncHandler(async (req, res) => {
   //find the tweet in the database
   const tweetComment = await Tweet.findById(tweetId)
 
+  console.log(tweetId);
+
   if (!tweetComment) {
     throw new ApiError("tweet comment is not found")
   }
 
   //match and find all comments
-  const aggregateComments = await Tweet.aggregate([
+  const aggregateComments = await Comment.aggregate([
     {
       $match: {
         tweet: new mongoose.Types.ObjectId(tweetId),
