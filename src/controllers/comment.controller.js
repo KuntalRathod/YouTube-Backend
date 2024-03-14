@@ -3,7 +3,6 @@ import { Comment } from "../models/comment.model.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
-import { Tweet } from "../models/tweet.model.js"
 import { Video } from "../models/video.model.js"
 
 const addCommentToVideo = asyncHandler(async (req, res) => {
@@ -166,164 +165,11 @@ const deleteCommentToVideo = asyncHandler(async (req, res) => {
     )
 })
 
-const addCommentToTweet = asyncHandler(async (req, res) => {
-  // TODO: add a comment to a Tweet
-  const { comment } = req.body
-  const { tweetId } = req.params
 
-  console.log("comment :", comment)
-  console.log("tweetId : ", tweetId)
-
-  if (!comment || comment?.trim() === "") {
-    throw new ApiError(400, "Content is required!!")
-  }
-
-  if (!isValidObjectId(tweetId)) {
-    throw new ApiError(400, "this tweet id is not valid!!")
-  }
-
-  //save in db and create all the fields
-  const commentTweet = await Comment.create({
-    content: comment,
-    tweet: tweetId,
-    owner: req.user._id,
-  })
-
-  if (!commentTweet) {
-    throw new ApiError(500, "Something went wrong while creating tweet comment")
-  }
-  //return res
-  return res
-    .status(201)
-    .json(
-      new ApiResponse(200, commentTweet, "comment tweet created successfully!!")
-    )
-})
-
-const getTweetComments = asyncHandler(async (req, res) => {
-  // TODO: add a comment to a Tweet
-  const { tweetId } = req.params
-  const { page = 1, limit = 10 } = req.query
-
-  if (!isValidObjectId(tweetId)) {
-    throw new ApiError(400, "this tweet id is not valid!!!")
-  }
-
-  //find the tweet in the database
-  const tweetComment = await Tweet.findById(tweetId)
-
-  console.log(tweetId)
-
-  if (!tweetComment) {
-    throw new ApiError("tweet comment is not found")
-  }
-  //find all comments associated with the tweet
-  const comments = await Comment.find({ tweet: tweetId })
-    .skip((page - 1) * limit)
-    .limit(limit)
-
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(200, comments, "tweet comments fetched successfully!!")
-    )
-})
-
-const updateCommentToTweet = asyncHandler(async (req, res) => {
-  // TODO: update a comment to Tweet
-  const { newContent } = req.body
-  const { commentId } = req.params
-
-  if (!newContent || newContent?.trim() === "") {
-    throw new ApiError(400, "new content is required!!")
-  }
-
-  if (!isValidObjectId(commentId)) {
-    throw new ApiError(400, "this comment id is not valid")
-  }
-
-  const comment = await Comment.findById(commentId)
-
-  if (!comment) {
-    throw new ApiError(404, "This tweet is not found!!!")
-  }
-
-  if (comment?.owner?.toString() !== req.user._id?.toString()) {
-    throw new ApiError(403, "you dont have permission to update this comment!!")
-  }
-
-  const updateComment = await Comment.findByIdAndUpdate(
-    commentId,
-    {
-      $set: {
-        content: newContent,
-      },
-    },
-    {
-      new: true,
-    }
-  )
-
-  if (!updateComment) {
-    throw new ApiError(
-      403,
-      "something went wrong while updating this comment!!"
-    )
-  }
-
-  //return res
-  return res
-    .status(201)
-    .json(
-      new ApiResponse(200, updateComment, "comment updated successfully!!!")
-    )
-})
-
-const deleteCommentToTweet = asyncHandler(async (req, res) => {
-  // TODO: Delete a comment to tweet
-  const { commentId } = req.params
-
-  if (!isValidObjectId(commentId)) {
-    throw new ApiError(403, "this is comment id is not valid!!")
-  }
-
-  const comment = await Comment.findById(commentId)
-
-  if (!comment) {
-    throw new ApiError(404, "comment not found!!")
-  }
-
-  if (comment?.owner?.toString() !== req.user._id?.toString()) {
-    throw new ApiError(
-      500,
-      "you dont have permission to delete this tweet comment!!"
-    )
-  }
-
-  const deletetweet = await Comment.deleteOne({ _id: commentId })
-
-  if (!deletetweet) {
-    throw new ApiError(
-      403,
-      "something went wrong while deleting this comment tweet!!"
-    )
-  }
-
-  //return res
-  return res
-    .status(201)
-    .json(
-      new ApiResponse(200, deletetweet, "tweet comment deleted successfully!!!")
-    )
-})
 
 export {
   addCommentToVideo,
-  addCommentToTweet,
   getVideoComments,
-  getTweetComments,
   updateCommentToVideo,
-  updateCommentToTweet,
   deleteCommentToVideo,
-  deleteCommentToTweet,
 }
