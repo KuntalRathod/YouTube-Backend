@@ -5,7 +5,7 @@ import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { Video } from "../models/video.model.js"
 
-const addCommentToVideo = asyncHandler(async (req, res) => {
+const addComment = asyncHandler(async (req, res) => {
   // TODO: add a comment to a video
 
   const { comment } = req.body
@@ -78,7 +78,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
   })
 })
 
-const updateCommentToVideo = asyncHandler(async (req, res) => {
+const updateComment = asyncHandler(async (req, res) => {
   // TODO: update a comment to Video
   const { newContent } = req.body
   const { commentId } = req.params
@@ -125,7 +125,7 @@ const updateCommentToVideo = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, updateComment, "Comment updated successfully!!"))
 })
 
-const deleteCommentToVideo = asyncHandler(async (req, res) => {
+const deleteComment = asyncHandler(async (req, res) => {
   // TODO: Delete a comment to Video
 
   const { commentId } = req.params
@@ -167,9 +167,4 @@ const deleteCommentToVideo = asyncHandler(async (req, res) => {
 
 
 
-export {
-  addCommentToVideo,
-  getVideoComments,
-  updateCommentToVideo,
-  deleteCommentToVideo,
-}
+export { addComment, getVideoComments, updateComment, deleteComment }
