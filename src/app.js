@@ -26,18 +26,12 @@ app.use(express.static("public"))
 app.use(cookieParser())
 
 //routes import
-
-//import userRoutes
 import userRouter from "./routes/user.routes.js"
-
-//import tweetRouter
 import tweetRouter from "./routes/tweet.routes.js"
-
-//import videoRouter
 import videoRouter from "./routes/video.routes.js"
-
-//import commentRouter
 import commentRouter from "./routes/comment.routes.js"
+import playlistRouter from "./routes/playlist.routes.js"
+
 
 //routes declaration
 app.use("/api/v1/users", userRouter)
@@ -48,9 +42,8 @@ app.use("/api/v1/videos",videoRouter)
 //http://localhost:8000/api/v1/videos
 app.use("/api/v1/comments", commentRouter)
 //http://localhost:8000/api/v1/comments
-
-
-
+app.use("/api/v1/playlist", playlistRouter)
+//http://localhost:8000/api/v1/playlist
 
 
 
