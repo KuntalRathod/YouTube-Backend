@@ -129,7 +129,7 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
     throw new ApiError(404, "playlist not found!!")
   }
 
-  if (playlist?.owner?.toString() !== req.user._id?.String()) {
+  if (playlist?.owner?.toString() !== req.user._id?.toString()) {
     throw new ApiError(
       400,
       "you dont have permission to add video to playlist!"
