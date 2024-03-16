@@ -281,14 +281,66 @@ const deletePlaylist = asyncHandler(async (req, res) => {
   return res
     .status(201)
     .json(
-      new ApiResponse(200, deletePlaylist, "playlist deleted successfully!!!")
+      new ApiResponse(200, deletePlaylist, "playlist deleted successfully!!")
     )
 })
 
+//update playlist
 const updatePlaylist = asyncHandler(async (req, res) => {
   const { playlistId } = req.params
-  const { name, description } = req.body
-  //TODO: update playlist
+  const { NewName, NewDescription } = req.body
+
+  if (!playlistId) {
+    throw new ApiError(403, "this playlist id is not valid!")
+  }
+
+  //if any one is provided
+  if (
+    !NewName ||
+    NewName?.trim() === "" ||
+    !NewDescription ||
+    NewDescription?.trim() === ""
+  ) {
+    throw new ApiError(403, "Either name or description is required!")
+  } else {
+    const playlist = await Playlist.findById(playlistId)
+
+    if (!playlist) {
+      throw new ApiError(404, "playlist not found!")
+    }
+
+    if (playlist?.owner?.toString() !== req.user._id?.toString()) {
+      throw new ApiError(
+        403,
+        "you dont have to permission to updating playlist!"
+      )
+    }
+
+    const updatePlaylist = await Playlist.findOneAndUpdate(
+      playlistId,
+      {
+        $set: {
+          new: NewName,
+          description: NewDescription,
+        },
+      },
+      {
+        new: true,
+      }
+    )
+
+    if (!updatePlaylist) {
+      throw new ApiError(500,"Something went wrong while updating playlist!!")
+    }
+
+    //return res
+    return res
+      .status(201).json(new ApiResponse(
+        200,
+        updatePlaylist,
+        "Playlist updated successfully!"
+      ))
+  }
 })
 
 export {
