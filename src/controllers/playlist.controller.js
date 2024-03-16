@@ -248,9 +248,41 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
     )
 })
 
+//delete playlist
 const deletePlaylist = asyncHandler(async (req, res) => {
   const { playlistId } = req.params
-  // TODO: elete playlist
+
+  if (!isValidObjectId(playlistId)) {
+    throw new ApiError(403, "this playlist id is not valid!!")
+  }
+
+  const playlist = await Playlist.findById(playlistId)
+
+  if (!playlist) {
+    throw new ApiError(404, "playlist not found!!")
+  }
+
+  if (playlist?.owner.toString() !== req.user._id?.toString()) {
+    throw new ApiError(
+      400,
+      "you don't have permission to delete this playlist!!"
+    )
+  }
+
+  const deletePlaylist = await Playlist.deleteOne({
+    _id: playlistId,
+  })
+
+  if (!deletePlaylist) {
+    throw new ApiError(500, "Something went wrong while deleting playlist!!")
+  }
+
+  //return res
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(200, deletePlaylist, "playlist deleted successfully!!!")
+    )
 })
 
 const updatePlaylist = asyncHandler(async (req, res) => {
