@@ -144,7 +144,40 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
   }
 
   //if video already exists in playlist
- 
+  if (playlist.video.includes(videoId)) {
+    throw new ApiError(400, "video already exists in the playlist!!")
+  }
+
+  //push video to the playlist
+  const addedToPlaylist = await Playlist.findByIdAndUpdate(
+    playlistId,
+    {
+      $push: {
+        video: videoId,
+      },
+    },
+    {
+      new: true,
+    }
+  )
+
+  if (!addedToPlaylist) {
+    throw new ApiError(
+      500,
+      "something went wrong while adding video to playlist!!"
+    )
+  }
+
+  //return res
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(
+        200,
+        addVideoToPlaylist,
+        "added video in playlist successfully!!"
+      )
+    )
 })
 
 const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
