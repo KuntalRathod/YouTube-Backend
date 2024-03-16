@@ -320,7 +320,7 @@ const updatePlaylist = asyncHandler(async (req, res) => {
       playlistId,
       {
         $set: {
-          new: NewName,
+          name: NewName,
           description: NewDescription,
         },
       },
