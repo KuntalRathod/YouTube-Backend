@@ -316,7 +316,7 @@ const updatePlaylist = asyncHandler(async (req, res) => {
       )
     }
 
-    const updatePlaylist = await Playlist.findOneAndUpdate(
+    const updatePlaylist = await Playlist.findByIdAndUpdate(
       playlistId,
       {
         $set: {
