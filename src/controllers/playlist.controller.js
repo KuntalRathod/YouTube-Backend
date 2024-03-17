@@ -129,7 +129,7 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
     throw new ApiError(404, "playlist not found!!")
   }
 
-  if (playlist?.owner?.toString() !== req.user._id?.toString()) {
+  if (playlist.owner.toString() !== req.user._id.toString()) {
     throw new ApiError(
       400,
       "you dont have permission to add video to playlist!"
@@ -143,8 +143,13 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Video is not found!!")
   }
 
+  // Check if playlist exists and it has a video property
+  // if (!playlist || !Array.isArray(playlist.videos)) {
+  //   throw new ApiError(500, "Playlist is not properly defined!!")
+  // }
+
   //if video already exists in playlist
-  if (playlist.video.includes(videoId)) {
+  if (playlist.videos.includes(videoId)) {
     throw new ApiError(400, "video already exists in the playlist!!")
   }
 
