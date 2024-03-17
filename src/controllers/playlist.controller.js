@@ -218,7 +218,7 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
   }
 
   //if video exists but not in playlists
-  if (!playlist.video.includes(videoId)) {
+  if (!playlist.videos.includes(videoId)) {
     throw new ApiError(400, "video exists but not exists in playlist!!")
   }
 
