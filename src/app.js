@@ -45,7 +45,7 @@ app.use("/api/v1/comments", commentRouter)
 //http://localhost:8000/api/v1/comments
 app.use("/api/v1/playlist", playlistRouter)
 //http://localhost:8000/api/v1/playlist
-app.use("/api/v1/like", likeRouter)
+app.use("/api/v1/likes", likeRouter)
 //http://localhost:8000/api/v1/like
 
 
