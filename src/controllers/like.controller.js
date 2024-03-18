@@ -96,7 +96,7 @@ const toggleCommentLikeAndUnlike = asyncHandler(async (req, res) => {
       new ApiResponse(
         200,
         {},
-        `User ${like? "like" : "Unlike"} comment successfully!!`
+        `User ${like ? "like" : "Unlike"} comment successfully!!`
       )
     )
 })
@@ -133,29 +133,80 @@ const toggleTweetLikeAndUnlike = asyncHandler(async (req, res) => {
       throw new ApiError(500, "something went wrong while like tweet!!")
     }
   }
-  
+
   //return res
   return res
     .status(201)
-    .json(new ApiResponse(
-      200,
-      {},
-      `User ${like? "like" : "Unlike"} tweet successfully!!`
-    ))
-
+    .json(
+      new ApiResponse(
+        200,
+        {},
+        `User ${like ? "like" : "Unlike"} tweet successfully!!`
+      )
+    )
 })
 
+//get liked videos
 const getLikedVideos = asyncHandler(async (req, res) => {
-  //TODO: get all liked videos
+  const userId = req.user._id
 
+  if (isValidObjectId(userId)) {
+    throw new ApiError(403, "this is not valid userId!!")
+  }
 
+  // Use MongoDB aggregation to get liked videos
+  const likes = await Like.aggregate([
+    {
+      // The $lookup stage performs a join with the "videos" collection
+      $lookup: {
+        from: "videos",
+        localField: "video",
+        foreignField: "_id",
+        as: "likedVideo",
+        pipeline: [
+          {
+            // Another $lookup stage to join with the "users" collection
+            $lookup: {
+              from: "users",
+              localField: "videoOwner",
+              foreignField: "_id",
+              as: "videoOwner",
+              pipeline: [
+                {
+                  // The $project stage specifies the fields to include in the output documents
+                  $project: {
+                    fullName: 1,
+                    username: 1,
+                    avatar: 1,
+                  },
+                },
+              ],
+            },
+          },
+          {
+            // The $addFields stage adds new fields to the output documents
+            $addFields: {
+              videoOwner: {
+                // The $arrayElemAt operator returns the element at the specified array index
+                $arrayElemAt: ["$videoOwner", 0],
+              },
+            },
+          },
+        ],
+      },
+    },
+  ])
 
-
-
-
-
-
-  
+  //return res
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        likes[2].likedVideos,
+        "fetched liked videos successfully!!"
+      )
+    )
 })
 
 export {
