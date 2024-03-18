@@ -63,8 +63,8 @@ const toggleCommentLikeAndUnlike = asyncHandler(async (req, res) => {
     throw new ApiError(400, "this comment id is not valid!!")
   }
 
-  //find the comment like or not
-  const commentLike = await Comment.findOne({
+  //find the comment already like or not
+  const commentLike = await Like.findOne({
     comment: commentId,
   })
 
@@ -77,36 +77,85 @@ const toggleCommentLikeAndUnlike = asyncHandler(async (req, res) => {
     })
 
     if (!unlike) {
-      throw new ApiError(500,"something went wrong while unlike comment!!")
+      throw new ApiError(500, "something went wrong while unlike comment!!")
     }
-  }
-  else {
+  } else {
     like = await Like.create({
       comment: commentId,
-      likedBy : req.user._id
+      likedBy: req.user._id,
     })
     if (!like) {
-      throw new ApiError(500,"something went wrong while like comment!!")
+      throw new ApiError(500, "something went wrong while like comment!!")
     }
   }
 
   //return res
   return res
     .status(201)
+    .json(
+      new ApiResponse(
+        200,
+        {},
+        `User ${like? "like" : "Unlike"} comment successfully!!`
+      )
+    )
+})
+
+//like or unlike tweet
+const toggleTweetLikeAndUnlike = asyncHandler(async (req, res) => {
+  const { tweetId } = req.params
+
+  if (!tweetId) {
+    throw new ApiError(500, "this tweet id is not valid!!")
+  }
+
+  //find tweet already like or not
+  const tweetLike = await Like.findOne({
+    tweet: tweetId,
+  })
+
+  let like
+  let unlike
+
+  if (tweetLike) {
+    unlike = await Like.deleteOne({
+      tweet: tweetId,
+    })
+    if (!unlike) {
+      throw new ApiError(500, "something went wrong while unlike tweet!!")
+    }
+  } else {
+    like = await Like.create({
+      tweet: tweetId,
+      likedBy: req.user._id,
+    })
+    if (!like) {
+      throw new ApiError(500, "something went wrong while like tweet!!")
+    }
+  }
+  
+  //return res
+  return res
+    .status(201)
     .json(new ApiResponse(
       200,
       {},
-      `User {$like? "like" : "Unlike"} comment successfully!!`
+      `User ${like? "like" : "Unlike"} tweet successfully!!`
     ))
-})
 
-const toggleTweetLikeAndUnlike = asyncHandler(async (req, res) => {
-  const { tweetId } = req.params
-  //TODO: toggle like on tweet
 })
 
 const getLikedVideos = asyncHandler(async (req, res) => {
   //TODO: get all liked videos
+
+
+
+
+
+
+
+
+  
 })
 
 export {
