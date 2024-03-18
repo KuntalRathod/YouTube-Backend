@@ -21,7 +21,7 @@ This project marks a significant milestone in my backend development journey, wh
 ## Tweet Functionalities
 ### Tweet Interaction:
 * Users can post tweets, like, and dislike them.
-* Comment on tweets, fostering engagement.
+
 
 ## Technologies Used
 **Node.js & Express.js:**  The core of the backend development.
