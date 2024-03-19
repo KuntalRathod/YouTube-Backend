@@ -150,6 +150,8 @@ const toggleTweetLikeAndUnlike = asyncHandler(async (req, res) => {
 const getLikedVideos = asyncHandler(async (req, res) => {
   const userId = req.user._id
 
+  console.log(userId);
+
   if (isValidObjectId(userId)) {
     throw new ApiError(403, "this is not valid userId!!")
   }
