@@ -33,22 +33,18 @@ import commentRouter from "./routes/comment.routes.js"
 import playlistRouter from "./routes/playlist.routes.js"
 import likeRouter from "./routes/like.routes.js"
 
-
 //routes declaration
 app.use("/api/v1/users", userRouter)
 //http://localhost:8000/api/v1/users/register
 app.use("/api/v1/tweets", tweetRouter)
 //http://localhost:8000/api/v1/tweets
-app.use("/api/v1/videos",videoRouter)
+app.use("/api/v1/videos", videoRouter)
 //http://localhost:8000/api/v1/videos
 app.use("/api/v1/comments", commentRouter)
 //http://localhost:8000/api/v1/comments
 app.use("/api/v1/playlist", playlistRouter)
 //http://localhost:8000/api/v1/playlist
 app.use("/api/v1/likes", likeRouter)
-//http://localhost:8000/api/v1/like
-
-
-
+//http://localhost:8000/api/v1/likes
 
 export { app }
