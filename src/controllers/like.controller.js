@@ -16,6 +16,7 @@ const toggleVideoLikeAndUnlike = asyncHandler(async (req, res) => {
   //find video already like or not
   const videoLike = await Like.findOne({
     video: videoId,
+    
   })
 
   let like
