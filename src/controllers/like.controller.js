@@ -152,7 +152,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
 
   console.log(userId);
 
-  if (isValidObjectId(userId)) {
+  if (!isValidObjectId(userId)) {
     throw new ApiError(403, "this is not valid userId!!")
   }
 
