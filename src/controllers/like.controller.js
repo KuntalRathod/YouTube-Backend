@@ -9,7 +9,7 @@ const toggleVideoLikeAndUnlike = asyncHandler(async (req, res) => {
   // Extract videoId from request parameters
   const { videoId } = req.params
 
-  if (isValidObjectId(videoId)) {
+  if (!isValidObjectId(videoId)) {
     throw new ApiError(403, "this video id is not valid!!")
   }
 
