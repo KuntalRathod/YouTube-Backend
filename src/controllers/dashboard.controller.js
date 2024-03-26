@@ -42,7 +42,7 @@ const getChannelStats = asyncHandler(async (req, res) => {
   ])
 
   // Total subscribers of the channel
-  const allsubscribers = await Subscription.aggregate([
+  const allSubscribes = await Subscription.aggregate([
     {
       $match: {
         channel: new mongoose.Types.ObjectId(req.user._id), // Matching subscriptions by the current user's channel
@@ -84,7 +84,7 @@ const getChannelStats = asyncHandler(async (req, res) => {
 
   // Constructing the final stats object
   const stats = {
-    Subscribers: allsubscribers[0].subscribers,
+    Subscribers: allSubscribes[0].subscribers,
     totalVideos: allVideo[0].Videos,
     totalVideoViews: allViews[0].allVideosViews,
     totalVideoLikes: allLikes[0].totalVideoLikes,
@@ -98,12 +98,27 @@ const getChannelStats = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, stats, "fetching channel stats successfully!!"))
 })
 
-  // TODO: Get all the videos uploaded by the channel
+// TODO: Get all the videos uploaded by the channel
 const getChannelVideos = asyncHandler(async (req, res) => {
+  const allVideo = await Video.find({
+    videoOwner: req.user._id,
+  })
 
+  if (!allVideo) {
+    throw new ApiError(
+      500,
+      "something went wrong while fetching channel all videos!!"
+    )
+  }
 
-
-
+  //return res
+  return res
+    .status(201)
+    .json(new ApiResponse(
+      200,
+      allVideo,
+      "All Videos fetched successfully!!"
+    ))
 })
 
 export { getChannelStats, getChannelVideos }

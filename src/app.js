@@ -48,6 +48,6 @@ app.use("/api/v1/playlist", playlistRouter)
 app.use("/api/v1/likes", likeRouter)
 //http://localhost:8000/api/v1/likes
 app.use("/api/v1/dashboard", dashboardRouter)
-//http://localhost:8000/api/v1/likes
+//http://localhost:8000/api/v1/dashboard
 
 export { app }
