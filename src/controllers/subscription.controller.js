@@ -7,6 +7,7 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 
 const toggleSubscription = asyncHandler(async (req, res) => {
   const { channelId } = req.params
+  console.log(channelId);
 })
 
 // controller to return subscriber list of a channel
