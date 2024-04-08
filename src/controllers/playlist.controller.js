@@ -31,6 +31,8 @@ const createPlaylist = asyncHandler(async (req, res) => {
     throw new ApiError(500, "something went wrong while creating playlist!")
   }
 
+  console.log(playlist);
+
   //return res
   return res
     .status(201)
