@@ -9,6 +9,7 @@ import { Video } from "../models/video.model.js"
 //create playlist
 const createPlaylist = asyncHandler(async (req, res) => {
   const { name, description } = req.body
+  console.log(name,description);
 
   if (
     !name ||
