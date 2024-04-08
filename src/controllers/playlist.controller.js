@@ -25,7 +25,6 @@ const createPlaylist = asyncHandler(async (req, res) => {
     description,
     owner: req.user._id,
   })
-  console.log(playlist);
   
   if (!playlist) {
     throw new ApiError(500, "something went wrong while creating playlist!")
