@@ -62,7 +62,6 @@ const getPlaylistById = asyncHandler(async (req, res) => {
 //get user playlist by userId
 const getUserPlaylists = asyncHandler(async (req, res) => {
   const { userId } = req.params
-  console.log(userId);
 
   if (!isValidObjectId(userId)) {
     throw new ApiError(403, "this user id is not valid!!")
