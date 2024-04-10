@@ -48,7 +48,6 @@ const getPlaylistById = asyncHandler(async (req, res) => {
 
   // Find the playlist in the database using the playlistId
   const playlist = await Playlist.findById(playlistId)
-  console.log(playlist);
 
   if (!playlist) {
     throw new ApiError(404, "playlist is not found!!")
