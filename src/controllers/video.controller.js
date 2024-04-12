@@ -96,7 +96,6 @@ const updateVideo = asyncHandler(async (req, res) => {
     _id: videoId,
   })
 
-  console.log(previousVideo);
 
   if (!previousVideo) {
     throw new ApiError(404, "video not found!")
