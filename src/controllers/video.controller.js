@@ -32,7 +32,6 @@ const publishAVideo = asyncHandler(async (req, res) => {
   const thumbnailFile = await uploadOnCloudinary(thumbnailFileLocalPath)
 
   console.log(videoFile);
-  console.log(thumbnailFile);
 
   if (!videoFile) {
     throw new ApiError(
