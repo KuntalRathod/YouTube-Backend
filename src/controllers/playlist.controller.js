@@ -195,7 +195,9 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
     throw new ApiError(400, "this playlist id is not valid!!")
   }
 
- 
+  if (!isValidObjectId(videoId)) {
+    throw new ApiError(400, "this video id is not valid!!")
+  }
   //find playlist in db so you can remove the video from playlist
   const playlist = await Playlist.findById(playlistId)
   console.log(playlist);
