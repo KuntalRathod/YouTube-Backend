@@ -298,7 +298,7 @@ const deletePlaylist = asyncHandler(async (req, res) => {
 const updatePlaylist = asyncHandler(async (req, res) => {
   const { playlistId } = req.params
   const { NewName, NewDescription } = req.body
-  console.log(playlistId);
+
 
   if (!playlistId) {
     throw new ApiError(403, "this playlist id is not valid!")
