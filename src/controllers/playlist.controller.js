@@ -282,9 +282,9 @@ const deletePlaylist = asyncHandler(async (req, res) => {
     _id: playlistId,
   })
 
-  if (!deletePlaylist) {
-    throw new ApiError(500, "Something went wrong while deleting playlist!!")
-  }
+  // if (!deletePlaylist) {
+  //   throw new ApiError(500, "Something went wrong while deleting playlist!!")
+  // }
 
   //return res
   return res
