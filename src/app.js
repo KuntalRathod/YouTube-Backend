@@ -33,6 +33,7 @@ import commentRouter from "./routes/comment.routes.js"
 import playlistRouter from "./routes/playlist.routes.js"
 import likeRouter from "./routes/like.routes.js"
 import dashboardRouter from "./routes/dashboard.routes.js"
+import subscriptionRouter from "./routes/subscription.routes.js"
 
 //routes declaration
 app.use("/api/v1/users", userRouter)
@@ -49,5 +50,7 @@ app.use("/api/v1/likes", likeRouter)
 //http://localhost:8000/api/v1/likes
 app.use("/api/v1/dashboard", dashboardRouter)
 //http://localhost:8000/api/v1/dashboard
+app.use("/api/v1/subscription", subscriptionRouter)
+//http://localhost:8000/api/v1/subscription
 
 export { app }
